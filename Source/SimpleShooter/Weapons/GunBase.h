@@ -18,6 +18,11 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
+	void PullTrigger();
+
+	inline void SetDebugStatus(bool IsEnable) { IsDebugEnabled = IsEnable; };
+	inline bool GetDebugStatus() const { return IsDebugEnabled; };
+
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -29,4 +34,27 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* SkeletalMeshComponent;
 
+	// Particle Effects
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystem* MuzzleFlash;
+
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	UParticleSystem* ImpactEffect;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	float DamageAmount = 10.f;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	float MaxShootingRange = 1000.f;
+
+	UPROPERTY(EditAnywhere, Category = "Damage")
+	TSubclassOf<UDamageType> DamageType;
+	
+	// Debug 
+	void DrawDebugItems(
+		const FVector& ViewportLocation, 
+		const FRotator& ViewportRotation,
+		const FHitResult& HitResult) const;
+
+	bool IsDebugEnabled = false;
 };
