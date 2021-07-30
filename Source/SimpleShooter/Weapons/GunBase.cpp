@@ -54,15 +54,20 @@ void AGunBase::PullTrigger()
 	FVector InShotDirection = -ViewportRotation.Vector();
 
 	
-		//Draw Bullet Hit Point
+	//Draw Bullet Hit Point
 	FHitResult TraceHitResult;
 	FVector TraceEndLocation = ViewportLocation + ViewportRotation.Vector() * MaxShootingRange;
+	
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(GetOwner());
 
 	bool TraceSuccess = GetWorld()->LineTraceSingleByChannel(
 		OUT TraceHitResult,
 		ViewportLocation,
 		TraceEndLocation,
-		BULLET_TRACE_CHANNEL);
+		BULLET_TRACE_CHANNEL,
+		Params);
 
 	if (!TraceSuccess) 
 	{
