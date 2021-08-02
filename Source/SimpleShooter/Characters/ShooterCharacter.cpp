@@ -53,7 +53,7 @@ float AShooterCharacter::TakeDamage(float DamageAmount, FDamageEvent const& Dama
 	Health = FMath::Clamp(Health - Damage, 0.f, MaxHealth);
 	UE_LOG(LogTemp, Warning, TEXT("Character %s is taking Damage, %f point of health remaing"), *GetName(), Health);
 	
-	if (GetIsDead())
+	if (IsDead())
 	{
 		ASimpleShooterGameModeBase* GameMode = GetWorld()->GetAuthGameMode<ASimpleShooterGameModeBase>();
 		if (GameMode != nullptr)
@@ -82,9 +82,14 @@ void AShooterCharacter::Shoot()
 	Gun->PullTrigger();
 }
 
-bool AShooterCharacter::GetIsDead() const
+bool AShooterCharacter::IsDead() const
 {
 	return Health <= 0;
+}
+
+float AShooterCharacter::GetHealthPercentage() const
+{
+	return Health / MaxHealth;
 }
 
 void AShooterCharacter::ToggleDebugStatus()

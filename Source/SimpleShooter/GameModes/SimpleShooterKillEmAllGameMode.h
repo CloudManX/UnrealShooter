@@ -15,4 +15,13 @@ class SIMPLESHOOTER_API ASimpleShooterKillEmAllGameMode : public ASimpleShooterG
 	GENERATED_BODY()
 public:
 	virtual void PawnKilled(APawn* KilledPawn) override;	
+
+protected:
+	virtual void BeginPlay() override;
+
+private:
+	void EndGame(bool bIsPlayerWinner);
+
+	FCriticalSection Mutex;
+	uint32 EnemyCnt;
 };

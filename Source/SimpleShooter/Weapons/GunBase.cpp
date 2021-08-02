@@ -35,44 +35,24 @@ void AGunBase::Tick(float DeltaTime)
 
 void AGunBase::PullTrigger()
 {
-	UE_LOG(LogTemp, Warning, TEXT("Gun Shots Fired!!!"));
-
 	if (MuzzleFlash)
 	{
 		UGameplayStatics::SpawnEmitterAttached(MuzzleFlash, SkeletalMeshComponent, "MuzzleFlashSocket");
-	}
+		if (MuzzleSound)
+		{
+			UGameplayStatics::SpawnSoundAttached(MuzzleSound, SkeletalMeshComponent, "MuzzleSound");
+		}
+	}	
 
-	APawn* OwnerPawn = Cast<APawn>(GetOwner());
-	checkf(OwnerPawn != nullptr, TEXT("Failed to Cast the Owner of %s to APawn."), *GetName());
-	AController* OwnerController = OwnerPawn->GetController();
-	checkf(OwnerPawn != nullptr, TEXT("Failed to Obtain AController of %s."), *GetOwner()->GetName());
-
-	FVector ViewportLocation;
-	FRotator ViewportRotation;
-
-	OwnerController->GetPlayerViewPoint(OUT ViewportLocation, OUT ViewportRotation);	
-	FVector InShotDirection = -ViewportRotation.Vector();
-
-	
-	//Draw Bullet Hit Point
 	FHitResult TraceHitResult;
-	FVector TraceEndLocation = ViewportLocation + ViewportRotation.Vector() * MaxShootingRange;
-	
-	FCollisionQueryParams Params;
-	Params.AddIgnoredActor(this);
-	Params.AddIgnoredActor(GetOwner());
+	FVector InShotDirection;
 
-	bool TraceSuccess = GetWorld()->LineTraceSingleByChannel(
-		OUT TraceHitResult,
-		ViewportLocation,
-		TraceEndLocation,
-		BULLET_TRACE_CHANNEL,
-		Params);
-
-	if (!TraceSuccess) 
+	if (!GunTrace(TraceHitResult, InShotDirection)) 
 	{
 		return;
 	}
+	
+	AController* OwnerController = GetOwnerController();
 
 	FPointDamageEvent PointDamageEvent(DamageAmount, TraceHitResult, InShotDirection, DamageType);
 	AActor* ActorTakesDamage = TraceHitResult.GetActor();	
@@ -89,12 +69,58 @@ void AGunBase::PullTrigger()
 			TraceHitResult.Location,
 			InShotDirection.Rotation()
 		);
+
+		if (ImpactSound)
+		{
+			UGameplayStatics::SpawnSoundAtLocation(GetWorld(), ImpactSound, TraceHitResult.Location);
+		}
 	}
 
 	if (IsDebugEnabled)
 	{
+		FVector ViewportLocation;
+		FRotator ViewportRotation;
+		
+		OwnerController->GetPlayerViewPoint(OUT ViewportLocation, OUT ViewportRotation);	
 		DrawDebugItems(ViewportLocation, ViewportRotation, TraceHitResult);
 	}
+}
+
+bool AGunBase::GunTrace(FHitResult& HitResult, FVector& InShotDirection)
+{
+	FVector ViewportLocation;
+	FRotator ViewportRotation;
+
+	AController* OwnerController = GetOwnerController();
+
+	OwnerController->GetPlayerViewPoint(OUT ViewportLocation, OUT ViewportRotation);	
+	InShotDirection = -ViewportRotation.Vector();
+	
+	FVector TraceEndLocation = ViewportLocation + ViewportRotation.Vector() * MaxShootingRange;
+	
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	Params.AddIgnoredActor(GetOwner());
+
+	bool bTraceSuccess = GetWorld()->LineTraceSingleByChannel(
+		OUT HitResult,
+		ViewportLocation,
+		TraceEndLocation,
+		BULLET_TRACE_CHANNEL,
+		Params);
+
+	return bTraceSuccess;
+}
+
+AController* AGunBase::GetOwnerController() const
+{
+	APawn* OwnerPawn = Cast<APawn>(GetOwner());
+	checkf(OwnerPawn != nullptr, TEXT("Failed to Cast the Owner of %s to APawn."), *GetName());
+
+	AController* OwnerController = OwnerPawn->GetController();
+	checkf(OwnerPawn != nullptr, TEXT("Failed to Obtain AController of %s."), *GetOwner()->GetName());
+
+	return OwnerController;
 }
 
 

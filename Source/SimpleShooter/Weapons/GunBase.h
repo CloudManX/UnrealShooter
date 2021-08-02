@@ -34,12 +34,23 @@ private:
 	UPROPERTY(VisibleAnywhere)
 	USkeletalMeshComponent* SkeletalMeshComponent;
 
+	// Gun Mechanics
+	bool GunTrace(FHitResult& HitResult, FVector& InShotDirection);
+
+	AController* GetOwnerController() const;
+
 	// Particle Effects
 	UPROPERTY(EditAnywhere, Category = "Effects")
 	UParticleSystem* MuzzleFlash;
 
 	UPROPERTY(EditAnywhere, Category = "Effects")
+	USoundBase* MuzzleSound;
+
+	UPROPERTY(EditAnywhere, Category = "Effects")
 	UParticleSystem* ImpactEffect;
+
+	UPROPERTY(EditAnywhere, Category = "Effects")
+	USoundBase* ImpactSound;
 
 	UPROPERTY(EditAnywhere, Category = "Damage")
 	float DamageAmount = 10.f;
